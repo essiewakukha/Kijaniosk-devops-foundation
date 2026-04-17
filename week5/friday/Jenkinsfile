@@ -1,0 +1,77 @@
+pipeline {
+    agent {
+        docker {
+            image 'node:18-alpine'
+        }
+    }
+
+    environment {
+        BUILD_DIR = 'dist'
+        APP_NAME  = 'kijanikiosk-payments'
+    }
+
+    stages {
+
+        stage('Clone') {
+            steps {
+                git branch: 'master', url: 'https://github.com/essiewakukha/jenkins-walkthrough'
+            }
+        }
+
+        stage('Lint') {
+            steps {
+                sh 'npm install'
+                sh 'npm run lint'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+                stash includes: 'dist/**, package.json', name: 'build'
+            }
+        }
+
+        stage('Verify') {
+            parallel {
+                stage('Test') {
+                    steps {
+                        sh 'npm test'
+                    }
+                }
+                stage('Security Audit') {
+                    steps {
+                        sh 'npm audit --audit-level=high || true'
+                    }
+                }
+            }
+        }
+
+        stage('Archive') {
+            steps {
+                archiveArtifacts artifacts: 'dist/**', fingerprint: true
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                echo "Publish stage placeholder"
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            echo "✅ Pipeline succeeded"
+        }
+        failure {
+            echo "❌ Pipeline failed"
+        }
+        changed {
+            echo "🔄 Status changed"
+        }
+    }
+}

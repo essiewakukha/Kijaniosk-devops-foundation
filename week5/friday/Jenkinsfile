@@ -61,7 +61,7 @@ pipeline {
                 }
             }
         }
-        stage('Publish') {
+     stage('Publish') {
     steps {
         dir('week5/friday/kijanikiosk') {
             withCredentials([usernamePassword(
@@ -70,9 +70,7 @@ pipeline {
                 passwordVariable: 'NEXUS_PASS'
             )]) {
                 sh '''
-                    apk add --no-cache git 2>/dev/null || true
-
-                    GIT_SHA=${GIT_COMMIT:0:7}
+                    GIT_SHA=$(echo $GIT_COMMIT | cut -c1-7)
                     VERSION="1.0.${BUILD_NUMBER}-${GIT_SHA}"
                     NEXUS_HOST=$(echo $NEXUS_URL | sed 's|http://||')
 

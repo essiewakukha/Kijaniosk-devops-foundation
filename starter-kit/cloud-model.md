@@ -1,28 +1,90 @@
 # Cloud Service Model
 
-## Selected Model Service: Platform As a Service(PAAS)
+## Selected Service Model: Platform as a Service (PaaS)
 
-### Justification:
+### Decision Summary
 
-PaaS provides a managed platform where developers can build, deploy, and run applications without managing the underlying infrastructure such as servers, operating systems, or networking.
+The KijaniKiosk platform is best implemented using a Platform as a Service (PaaS) model to prioritise rapid development, operational efficiency, and scalability.
 
-This is suitable for KijaniKiosk because:
-- The focus is on application development, not infrastructure management
-- It reduces operational complexity
-- It allows faster development and deployment
-- It provides built-in scalability and reliability
+---
 
+## Justification
+
+PaaS provides a managed environment where the cloud provider handles:
+
+* Infrastructure provisioning (servers, networking, storage)
+* Operating system management and patching
+* Runtime environment configuration
+
+This allows the engineering team to focus entirely on application logic.
+
+For KijaniKiosk, this is particularly important because:
+
+* The platform is a **payment application**, where development speed and reliability are critical
+* The team can **avoid managing infrastructure complexity** in early stages
+* Built-in scaling ensures the system can handle **increased transaction load**
+* Managed services reduce the risk of **configuration errors and downtime**
+
+---
+
+## Trade-offs
+
+While PaaS offers significant advantages, it introduces some limitations:
+
+* Reduced control over underlying infrastructure compared to IaaS
+* Potential vendor lock-in depending on the platform used
+
+However, for an early-stage system, these trade-offs are acceptable because:
+
+* Speed of delivery is more valuable than infrastructure control
+* Operational overhead must remain low
+
+---
 
 ## Comparison with Other Models
 
 ### Infrastructure as a Service (IaaS)
-- In Infrastructure as a Service, the cloud provider supplies the basic computing infrastructure such as virtual machines, networking, and storage.
 
-- The engineering team is responsible for configuring and maintaining everything that runs on those machines.
-- Not ideal for early-stage development
+IaaS provides virtual machines, storage, and networking, but requires the team to manage:
 
+* Operating systems
+* Security patching
+* Runtime environments
+
+Why not chosen:
+
+* Increases operational complexity
+* Slows down development
+* Requires additional DevOps effort for maintenance
+
+Conclusion:
+IaaS offers flexibility but is not efficient for rapid product development at this stage.
+
+---
 
 ### Software as a Service (SaaS)
-- Software as a Service provides fully managed applications delivered through a web interface or API.
-- Users do not build or maintain the underlying infrastructure or application platform. Instead, they configure the software to support their workflow.
-- Not suitable for building a custom platform like KijaniKiosk
+
+SaaS delivers fully managed applications that users configure but do not build.
+
+Why not chosen:
+
+* KijaniKiosk requires a **custom-built payment platform**
+* SaaS does not allow full control over business logic
+
+Conclusion:
+SaaS is unsuitable because it does not support building proprietary applications.
+
+---
+
+## Final Decision
+
+PaaS provides the optimal balance between:
+
+* Development speed
+* Operational simplicity
+* Scalability
+* Reliability
+
+It enables the team to focus on delivering business value while the cloud provider manages infrastructure concerns.
+
+This makes it the most appropriate model for KijaniKiosk at its current stage.

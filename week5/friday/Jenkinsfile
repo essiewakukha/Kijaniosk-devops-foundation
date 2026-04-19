@@ -57,7 +57,7 @@ pipeline {
         stage('Archive') {
             steps {
                 dir('week5/friday/kijanikiosk') {
-                    archiveArtifacts artifacts: 'nonexistent/**', fingerprint: true
+                    archiveArtifacts artifacts: 'dist/**', fingerprint: true
                 }
             }
         }

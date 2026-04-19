@@ -65,7 +65,7 @@ pipeline {
     steps {
         dir('week5/friday/kijanikiosk') {
             withCredentials([usernamePassword(
-                credentialsId: 'nexus-credentials',
+                credentialsId: 'wrong-credentials-id'',
                 usernameVariable: 'NEXUS_USER',
                 passwordVariable: 'NEXUS_PASS'
             )]) {

@@ -1,0 +1,101 @@
+=== Sun Apr 26 18:57:33 UTC 2026 === PRE-SWITCH STATE CONFIRMATION ===
+--- Blue service status ---
+active
+--- Green service status ---
+active
+--- Blue health (port 3000) ---
+{
+    "status": "healthy",
+    "version": "v1.3.0",
+    "environment": "blue",
+    "uptime": 1854.217720749
+}
+--- Green health (port 3001) ---
+{
+    "status": "healthy",
+    "version": "v1.4.0",
+    "environment": "green",
+    "uptime": 1854.241708401
+}
+--- Nginx proxy health (port 80) ---
+{
+    "status": "healthy",
+    "version": "v1.3.0",
+    "environment": "blue",
+    "uptime": 1854.307939623
+}
+--- State files ---
+blue
+green
+=== Sun Apr 26 18:57:33 UTC 2026 === STARTING MONITOR ===
+[18:58:57] === post-deploy-monitor.sh started ===
+[18:58:57] Monitoring environment: blue
+[18:58:57] Health endpoint: http://127.0.0.1:3000/health
+[18:58:57] Confidence window: 60s
+[18:58:57] Check interval: 10s
+[18:58:57] Failure threshold: 3 consecutive failures
+[18:58:57] [CHECK 1] blue health: OK — consecutive failures: 0
+[18:59:07] [CHECK 2] blue health: OK — consecutive failures: 0
+[18:59:17] [CHECK 3] blue health: OK — consecutive failures: 0
+[18:59:19] === Starting switch from blue to green ===
+[18:59:19] Testing green health on port 3001...
+[18:59:19] green is healthy. Proceeding with switch.
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+[18:59:19] nginx reloaded successfully
+[18:59:19] State updated: active=green previous=blue
+[18:59:19] === Switch complete. Active: green Previous: blue ===
+[18:59:27] [CHECK 4] blue health: OK — consecutive failures: 0
+[18:59:37] [CHECK 5] blue health: OK — consecutive failures: 0
+[18:59:47] [CHECK 6] blue health: OK — consecutive failures: 0
+[18:59:57] [CHECK 7] blue health: OK — consecutive failures: 0
+[19:00:07] [CHECK 8] blue health: OK — consecutive failures: 0
+[19:00:17] [CHECK 9] blue health: OK — consecutive failures: 0
+[19:00:27] [CHECK 10] blue health: OK — consecutive failures: 0
+[19:00:37] [CHECK 11] blue health: OK — consecutive failures: 0
+[19:00:47] [CHECK 12] blue health: OK — consecutive failures: 0
+[19:00:57] [CHECK 13] blue health: OK — consecutive failures: 0
+[19:01:08] [CHECK 14] blue health: OK — consecutive failures: 0
+[19:01:18] [CHECK 15] blue health: OK — consecutive failures: 0
+[19:01:28] [CHECK 16] blue health: OK — consecutive failures: 0
+[19:01:38] [CHECK 17] blue health: OK — consecutive failures: 0
+[19:01:48] [CHECK 18] blue health: OK — consecutive failures: 0
+=== Sun Apr 26 19:01:52 UTC 2026 === POST-SWITCH VERIFICATION ===
+--- Nginx proxy (must show v1.4.0) ---
+{
+    "status": "healthy",
+    "version": "v1.4.0",
+    "environment": "green",
+    "uptime": 2113.076971155
+}
+--- State files ---
+green
+blue
+--- Nginx config ---
+upstream kk-api-blue {
+    server 127.0.0.1:3000;
+}
+
+upstream kk-api-green {
+    server 127.0.0.1:3001;
+}
+
+server {
+    listen 80;
+    server_name _;
+
+    location / {
+        proxy_pass http://kk-api-green;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /health {
+        proxy_pass http://kk-api-green;
+        proxy_set_header Host $host;
+    }
+}
+[19:01:58] [CHECK 19] blue health: OK — consecutive failures: 0
+[19:02:08] [CHECK 20] blue health: OK — consecutive failures: 0
+[19:02:18] [CHECK 21] blue health: OK — consecutive failures: 0
+[19:02:28] [CHECK 22] blue health: OK — consecutive failures: 0

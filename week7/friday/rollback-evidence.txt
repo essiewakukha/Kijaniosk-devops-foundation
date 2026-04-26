@@ -1,0 +1,46 @@
+[19:02:41] === post-deploy-monitor.sh started ===
+[19:02:41] Monitoring environment: green
+[19:02:41] Health endpoint: http://127.0.0.1:3001/health
+[19:02:41] Confidence window: 60s
+[19:02:41] Check interval: 10s
+[19:02:41] Failure threshold: 3 consecutive failures
+[19:02:41] [CHECK 1] green health: OK — consecutive failures: 0
+[19:02:51] [CHECK 2] green health: OK — consecutive failures: 0
+[19:03:01] [CHECK 3] green health: OK — consecutive failures: 0
+[19:03:11] [CHECK 4] green health: OK — consecutive failures: 0
+[19:03:22] [CHECK 5] green health: FAILED — consecutive failures: 1
+[19:03:32] [CHECK 6] green health: FAILED — consecutive failures: 2
+[19:03:42] [CHECK 7] green health: FAILED — consecutive failures: 3
+[19:03:42] Consecutive failure threshold reached. Triggering automated rollback.
+[19:03:42] Executing: sudo bash /opt/kijanikiosk/scripts/rollback.sh
+[19:03:42] === Starting rollback from green to blue ===
+[19:03:42] Testing blue health on port 3000...
+[19:03:42] blue is healthy. Proceeding with rollback.
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+[19:03:42] nginx reloaded successfully
+[19:03:42] State updated: active=blue previous=green
+[19:03:42] === Rollback complete. Active: blue Previous: green ===
+[19:03:44] Verifying rollback: checking proxy health...
+[19:03:44] Proxy health check: OK — version: v1.3.0 — environment: blue
+[19:03:44] === Rollback confirmed. blue is serving through proxy. ===
+
+=== TIMESTAMP ANALYSIS ===
+T0 (fault introduced):        19:03:22
+T1 (rollback triggered):      19:03:42
+T2 (rollback confirmed):      19:03:44
+T0 → T1 (detection time):    20 seconds
+T1 → T2 (rollback execution): 2 seconds
+T0 → T2 TOTAL:               22 seconds ✅ UNDER 90 SECONDS
+Human intervention:           NONE — fully automated
+
+=== POST-ROLLBACK VERIFICATION ===
+{
+    "status": "healthy",
+    "version": "v1.3.0",
+    "environment": "blue",
+    "uptime": 2488.683633401
+}
+--- State files ---
+blue
+green

@@ -1,0 +1,44 @@
+# self-healing-rerun.txt
+# KijaniKiosk kk-payments — Self-Healing Verification
+# =============================================================================
+
+# STEP 1: Confirm today's Pod names
+$ kubectl get pods -l app=kk-payments
+NAME                           READY   STATUS    RESTARTS   AGE
+kk-payments-55896bbbff-mgtx4   1/1     Running   0          37m
+kk-payments-55896bbbff-v2r4l   1/1     Running   0          37m
+
+# STEP 2: Record T0 and delete one Pod
+T0 = 21:35:09
+
+$ kubectl delete pod kk-payments-55896bbbff-mgtx4
+pod "kk-payments-55896bbbff-mgtx4" deleted from default namespace
+
+# STEP 3: Watch output — Pod replacement sequence
+NAME                           READY   STATUS              RESTARTS   AGE
+kk-payments-55896bbbff-mgtx4   1/1     Running             0          37m
+kk-payments-55896bbbff-v2r4l   1/1     Running             0          37m
+kk-payments-55896bbbff-mgtx4   1/1     Terminating         0          37m
+kk-payments-55896bbbff-4d42j   0/1     Pending             0          0s
+kk-payments-55896bbbff-4d42j   0/1     ContainerCreating   0          2s
+kk-payments-55896bbbff-4d42j   1/1     Running             0          70s
+
+T1 = 21:36:19
+
+# STEP 4: Confirm 2 Pods running after recovery
+$ kubectl get pods -l app=kk-payments
+NAME                           READY   STATUS    RESTARTS   AGE
+kk-payments-55896bbbff-4d42j   1/1     Running   0          70s
+kk-payments-55896bbbff-v2r4l   1/1     Running   0          40m
+
+# STEP 5: Confirm Service still routes correctly
+$ curl http://192.168.49.2:30001/health
+{"status":"healthy","version":"1.0.0","service":"kk-payments","timestamp":"2026-05-02T21:36:25.000Z"}
+
+# TIMING SUMMARY
+T0 (Pod deleted):                    21:35:09
+T1 (Replacement Pod Running):        21:36:19
+Recovery time T0 to T1:              70 seconds
+Minimum replicas maintained:         1 Pod serving throughout 
+Service availability during recovery: uninterrupted 
+New Pod name:                        kk-payments-55896bbbff-4d42j 

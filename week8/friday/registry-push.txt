@@ -1,0 +1,71 @@
+# KijaniKiosk kk-payments — Registry Push and Pull Verification
+# ==================================================================
+# registry-push.txt
+
+# KijaniKiosk kk-payments — Registry Push and Pull Verification
+
+# Date: May 2, 2026
+
+## STEP 1: Version string computation
+
+$ VERSION=$(node -p "require('./package.json').version")
+$ GITSHA=$(git rev-parse --short HEAD)
+$ echo "${VERSION}-${GITSHA}"
+1.0.0-c6d7386
+
+$ IMAGE_TAG="estherwakukha/kk-payments:1.0.0-c6d7386"
+$ echo $IMAGE_TAG
+estherwakukha/kk-payments:1.0.0-c6d7386
+
+## STEP 2: Image build
+
+$ docker build --no-cache -f Dockerfile.production -t estherwakukha/kk-payments:1.0.0-c6d7386 .
+Build completed successfully
+
+## STEP 3: Push to Docker Hub
+
+$ docker push estherwakukha/kk-payments:1.0.0-c6d7386
+The push refers to repository [docker.io/estherwakukha/kk-payments]
+1.0.0-c6d7386: digest: sha256:cd77d81bf5309fc0451d2d5d42619af5cc36f491d8328e8dc60863b8c2f21a9c size: 856
+
+## STEP 4: Pull verification (full cycle)
+
+$ docker rmi estherwakukha/kk-payments:1.0.0-c6d7386
+
+$ docker pull estherwakukha/kk-payments:1.0.0-c6d7386
+Digest: sha256:cd77d81bf5309fc0451d2d5d42619af5cc36f491d8328e8dc60863b8c2f21a9c
+Status: Downloaded newer image
+
+## STEP 5: Runtime verification
+
+$ docker run --rm -p 3004:3000 estherwakukha/kk-payments:1.0.0-c6d7386
+$ curl http://localhost:3004/health
+{"status":"healthy","version":"1.0.0","service":"kk-payments"}
+
+## VALIDATION CHECKS
+
+Image size:
+44 MB (under 100MB requirement)
+
+User:
+kijani (non-root)
+
+tsc:
+Not present in production image
+
+## CONSISTENCY CHECK
+
+The image tag used:
+estherwakukha/kk-payments:1.0.0-c6d7386
+
+This tag EXACTLY matches the image tag used in:
+kk-payments-deployment.yaml
+
+## SUMMARY
+
+* Version tag generated from package.json and Git commit
+* Image successfully pushed to Docker Hub
+* Image successfully pulled from registry (full cycle verified)
+* Application runs correctly from pulled image
+* Tag consistency between registry and deployment confirmed
+

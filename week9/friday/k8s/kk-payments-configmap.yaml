@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kk-payments-config
+  namespace: kijani-project
+  labels:
+    app: kk-payments
+    project: kijanikiosk
+data:
+  NODE_ENV: "production"
+  DB_HOST: "postgres.kijani-project.svc.cluster.local"
+  DB_PORT: "5432"
+  LOG_LEVEL: "info"
+  APP_PORT: "3000"
+  MAX_CONNECTIONS: "10"

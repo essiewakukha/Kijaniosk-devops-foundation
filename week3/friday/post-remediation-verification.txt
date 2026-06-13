@@ -1,0 +1,87 @@
+# # Post-Remediation Verification
+# Step: Verify ACLs on /opt/kijanikiosk/shared/logs
+# Command used:
+sudo getfacl /opt/kijanikiosk/shared/logs
+getfacl: Removing leading '/' from absolute path names
+# file: opt/kijanikiosk/shared/logs
+# owner: kk-logs
+# group: kijanikiosk
+# flags: -s-
+user::rwx
+user:kk-logs:rwx
+user:kk-payments:rwx
+user:kk-api:rwx
+group::rwx
+mask::rwx
+other::---
+default:user::rwx
+default:user:kk-logs:rwx
+default:user:kk-payments:rwx
+default:user:kk-api:rwx
+default:group::rwx
+default:mask::rwx
+default:other::---
+# Verification:
+# The directory has correct ACLs applied for all service users (kk-api, kk-payments, kk-logs)
+# Default ACLs are set, so new files will inherit proper permissions
+
+# Step: Test log write as kk-api user
+# Command:
+sudo -u kk-api touch /opt/kijanikiosk/shared/logs/test-write.tmp
+
+# Output:
+# (no output, command succeeds)
+
+# Verification:
+# kk-api is able to create files in /opt/kijanikiosk/shared/logs
+# This confirms default ACLs are working after logrotate
+
+# Step: Verify file creation and ACLs as kk-api
+# Command:
+sudo -u kk-api ls -l /opt/kijanikiosk/shared/logs/test-write.tmp
+sudo -u kk-api getfacl /opt/kijanikiosk/shared/logs/test-write.tmp
+
+# Output:
+-rw-rw----+ 1 kk-api kijanikiosk 0 Mar 30 00:27 /opt/kijanikiosk/shared/logs/test-write.tmp
+# file: opt/kijanikiosk/shared/logs/test-write.tmp
+# owner: kk-api
+# group: kijanikiosk
+user::rw-
+user:kk-logs:rwx       #effective:rw-
+user:kk-payments:rwx   #effective:rw-
+user:kk-api:rwx        #effective:rw-
+group::rwx              #effective:rw-
+mask::rw-
+other::---
+
+# Verification:
+# The file was successfully created by kk-api
+# ACLs are inherited correctly: kk-api, kk-payments, kk-logs all have read/write access
+# Default ACL propagation works after logrotate
+
+# Step: Cleanup test file
+# Command:
+sudo -u kk-api rm /opt/kijanikiosk/shared/logs/test-write.tmp
+
+# Verification:
+# Test file removed, logs directory clean
+
+
+# Step: Verify systemd security score for kk-payments.service
+# Command:
+sudo systemd-analyze security kk-payments.service
+
+# Output (excerpt):
+NAME                                                        DESCRIPTION                                                                                         EXPOSURE
+✓ SystemCallFilter=~@swap                                     System call allow list defined for service, and @swap is not included                                       
+✗ SystemCallFilter=~@resources                                System call allow list defined for service, and @resources is included (e.g. ioprio_set is allowed)      0.2
+✗ SystemCallFilter=~@privileged                               System call allow list defined for service, and @privileged is included (e.g. chown is allowed)          0.2
+...
+✗ PrivateNetwork=                                             Service has access to the host's network                                                                 0.5
+✗ DeviceAllow=                                                Service has a device ACL with some special devices: char-rtc:r                                           0.1
+✗ IPAddressDeny=                                              Service defines IP address allow list with non-localhost entries                                         0.1
+
+# Overall exposure level for kk-payments.service: 1.2 OK 
+
+# Verification:
+# Hardening achieved a low exposure score (<2.5), confirming the service is well-hardened

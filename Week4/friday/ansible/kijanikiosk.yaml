@@ -1,0 +1,68 @@
+- name: Configure KijaniKiosk servers
+  hosts: kijanikiosk
+  become: true
+
+  tasks:
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name: "{{ packages }}"
+        state: present
+
+    - name: Ensure nginx is running
+      service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Create application users
+      user:
+        name: "kk-{{ inventory_hostname }}"
+        system: yes
+        create_home: no
+
+    - name: Create application directory
+      file:
+        path: /opt/kijanikiosk
+        state: directory
+        owner: "kk-{{ inventory_hostname }}"
+        group: "kk-{{ inventory_hostname }}"
+        mode: '0755'
+
+    - name: Deploy application config
+      template:
+        src: templates/app.conf.j2
+        dest: /opt/kijanikiosk/app.conf
+        owner: "kk-{{ inventory_hostname }}"
+        group: "kk-{{ inventory_hostname }}"
+        mode: '0644'
+
+
+    - name: Deploy systemd service
+      template:
+        src: templates/kijanikiosk.service.j2
+        dest: /etc/systemd/system/kijanikiosk.service
+        mode: '0644'
+      notify: Restart kijanikiosk service
+
+    - name: Reload systemd
+      command: systemctl daemon-reexec
+      changed_when: false
+
+    - name: Enable and start service
+      systemd:
+        name: kijanikiosk
+        enabled: true
+        state: started
+  handlers:
+
+    - name: Restart kijanikiosk service
+      systemd:
+        name: kijanikiosk
+        state: restarted
+        

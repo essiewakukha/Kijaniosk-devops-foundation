@@ -1,0 +1,12 @@
+[Unit]
+Description=KijaniKiosk Service
+After=network.target
+
+[Service]
+Type=simple
+User=kk-{{ inventory_hostname }}
+ExecStart=/usr/bin/bash -c "while true; do echo Running {{ inventory_hostname }}; sleep 60; done"
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

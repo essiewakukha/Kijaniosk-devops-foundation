@@ -1,0 +1,220 @@
+
+[22:06:18] Phase 1: Preflight and dirty-state detection
+User audit:
+kk-api:x:997:983:KijaniKiosk API Service:/home/kk-api:/usr/sbin/nologin
+kk-payments:x:995:982:KijaniKiosk API Service:/home/kk-payments:/usr/sbin/nologin
+kk-logs:x:994:981:KijaniKiosk API Service:/home/kk-logs:/usr/sbin/nologin
+Group audit:
+kijanikiosk:x:1003:kk-api,kk-payments,kk-logs
+Firewall audit:
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     ALLOW IN    Anywhere                   # ssh
+[ 2] 3000/tcp                   ALLOW IN    Anywhere                   # kk-api public
+[ 3] 3001/tcp on lo             ALLOW IN    Anywhere                   # kk-payments loopback only
+[ 4] 3001/tcp                   DENY IN     Anywhere                   # deny external kk-payments
+[ 5] 22/tcp (v6)                ALLOW IN    Anywhere (v6)              # ssh
+[ 6] 3000/tcp (v6)              ALLOW IN    Anywhere (v6)              # kk-api public
+[ 7] 3001/tcp (v6) on lo        ALLOW IN    Anywhere (v6)              # kk-payments loopback only
+[ 8] 3001/tcp (v6)              DENY IN     Anywhere (v6)              # deny external kk-payments
+
+Held packages:
+
+[22:06:18] Phase 2: Users, groups, directories, permissions, ACLs, and SUID remediation
+
+[22:06:18] DIRTY STATE: checking service accounts — all three exist from Tuesday lab with pre-assigned UIDs
+
+[22:06:18] DIRTY STATE: kk-api already exists (UID 997) — enforcing shell and group membership
+
+[22:06:18] DIRTY STATE: kk-payments already exists (UID 995) — enforcing shell and group membership
+
+[22:06:18] DIRTY STATE: kk-logs already exists (UID 994) — enforcing shell and group membership
+
+[22:06:20] DIRTY STATE: /opt/kijanikiosk was 777 from lab-setup.sh chmod -R 777 — correcting to 750
+
+[22:06:20] DIRTY STATE: deploy.sh found with SUID 4777 from lab-setup.sh — stripping SUID, setting 750
+
+[22:06:20] DIRTY STATE: scanning for any remaining SUID/SGID files under /opt/kijanikiosk — stripping all found
+
+[22:06:21] Phase 3: Packages and runtime dependencies
+
+[22:06:24] Detected broken VS Code APT repository on dirty VM
+
+[22:06:24] Disabling broken VS Code APT repository to allow package refresh
+Hit:1 https://download.docker.com/linux/ubuntu noble InRelease
+Hit:2 https://apt.releases.hashicorp.com noble InRelease
+Hit:3 https://download.virtualbox.org/virtualbox/debian noble InRelease
+Hit:4 http://security.ubuntu.com/ubuntu noble-security InRelease
+Hit:5 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:6 https://dl.google.com/linux/chrome/deb stable InRelease
+Hit:7 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:8 https://ppa.launchpadcontent.net/ansible/ansible/ubuntu noble InRelease
+Hit:9 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+acl is already the newest version (2.3.2-1build1.1).
+ufw is already the newest version (0.36.2-6).
+logrotate is already the newest version (3.21.0-2build1).
+python3 is already the newest version (3.12.3-0ubuntu2.1).
+curl is already the newest version (8.5.0-2ubuntu10.8).
+The following packages were automatically installed and are no longer required:
+  libgsoap-2.8.132t64 libqt5core5t64 libqt5dbus5t64 libqt5gui5t64 libqt5help5
+  libqt5network5t64 libqt5opengl5t64 libqt5printsupport5t64 libqt5qml5
+  libqt5qmlmodels5 libqt5quick5 libqt5sql5-sqlite libqt5sql5t64 libqt5svg5
+  libqt5waylandclient5 libqt5waylandcompositor5 libqt5widgets5t64
+  libqt5x11extras5 libqt5xml5t64 libvncserver1 libxcb-xinerama0 libxcb-xinput0
+  qt5-gtk-platformtheme qttranslations5-l10n qtwayland5
+Use 'sudo apt autoremove' to remove them.
+0 upgraded, 0 newly installed, 0 to remove and 48 not upgraded.
+
+[22:06:39] Phase 4: Application runners and systemd units
+● kk-api.service - KijaniKiosk API Service
+     Loaded: loaded (/etc/systemd/system/kk-api.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-03-29 20:50:27 EAT; 1h 16min ago
+   Main PID: 14923 (python3)
+      Tasks: 1 (limit: 9098)
+     Memory: 9.1M (peak: 10.1M)
+        CPU: 863ms
+     CGroup: /system.slice/kk-api.service
+             └─14923 /usr/bin/python3 /opt/kijanikiosk/api/api_service.py
+
+Mar 29 20:50:27 esther-HP-EliteBook-830-G5 systemd[1]: Started kk-api.service - KijaniKiosk API Service.
+● kk-payments.service - KijaniKiosk Payments Service
+     Loaded: loaded (/etc/systemd/system/kk-payments.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-03-29 20:50:28 EAT; 1h 16min ago
+   Main PID: 15146 (python3)
+      Tasks: 1 (limit: 9098)
+     Memory: 9.0M (peak: 9.5M)
+        CPU: 869ms
+     CGroup: /system.slice/kk-payments.service
+             └─15146 /usr/bin/python3 /opt/kijanikiosk/payments/payments_service.py
+
+Mar 29 20:50:28 esther-HP-EliteBook-830-G5 systemd[1]: Started kk-payments.service - KijaniKiosk Payments Service.
+● kk-logs.service - KijaniKiosk Log Aggregator Service
+     Loaded: loaded (/etc/systemd/system/kk-logs.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-03-29 22:05:50 EAT; 51s ago
+   Main PID: 31178 (python3)
+      Tasks: 1 (limit: 9098)
+     Memory: 3.1M (peak: 3.5M)
+        CPU: 127ms
+     CGroup: /system.slice/kk-logs.service
+             └─31178 /usr/bin/python3 /opt/kijanikiosk/logs/logs_service.py
+
+Mar 29 22:05:50 esther-HP-EliteBook-830-G5 systemd[1]: Started kk-logs.service - KijaniKiosk Log Aggregator Service.
+
+[22:06:42] Phase 5: Firewall rebuild from intent
+Backing up 'user.rules' to '/etc/ufw/user.rules.20260329_220643'
+Backing up 'before.rules' to '/etc/ufw/before.rules.20260329_220643'
+Backing up 'after.rules' to '/etc/ufw/after.rules.20260329_220643'
+Backing up 'user6.rules' to '/etc/ufw/user6.rules.20260329_220643'
+Backing up 'before6.rules' to '/etc/ufw/before6.rules.20260329_220643'
+Backing up 'after6.rules' to '/etc/ufw/after6.rules.20260329_220643'
+
+Default incoming policy changed to 'deny'
+(be sure to update your rules accordingly)
+Default outgoing policy changed to 'allow'
+(be sure to update your rules accordingly)
+Rules updated
+Rules updated (v6)
+Rules updated
+Rules updated (v6)
+Rules updated
+Rules updated (v6)
+Rules updated
+Rules updated (v6)
+Firewall is active and enabled on system startup
+
+[22:06:55] Phase 6: Journald persistence and logrotate
+warning: logrotate in debug mode does nothing except printing debug messages!  Consider using verbose mode (-v) instead if this is not what you want.
+
+reading config file /etc/logrotate.d/kijanikiosk
+Reading state from file: /var/lib/logrotate/status
+Allocating hash table for state file, size 64 entries
+Creating new state
+Creating new state
+Creating new state
+
+Handling 1 logs
+
+rotating pattern: /opt/kijanikiosk/shared/logs/*.log  after 1 days (7 rotations)
+empty log files are not rotated, old logs are removed
+considering log /opt/kijanikiosk/shared/logs/aggregator.log
+  Now: 2026-03-29 22:07
+  Last rotated at 2026-03-29 22:05
+  log does not need rotating (log has already been rotated)
+considering log /opt/kijanikiosk/shared/logs/api.log
+  Now: 2026-03-29 22:07
+  Last rotated at 2026-03-29 22:05
+  log does not need rotating (log has already been rotated)
+considering log /opt/kijanikiosk/shared/logs/payments.log
+  Now: 2026-03-29 22:07
+  Last rotated at 2026-03-29 22:05
+  log does not need rotating (log has already been rotated)
+not running postrotate script, since no logs were rotated
+
+[22:07:01] Phase 7: Health check JSON
+
+[22:07:02] Phase 8: Final verification
+uid=997(kk-api) gid=983(kk-api) groups=983(kk-api),1003(kijanikiosk)
+PASS: kk-api user exists
+uid=995(kk-payments) gid=982(kk-payments) groups=982(kk-payments),1003(kijanikiosk)
+PASS: kk-payments user exists
+uid=994(kk-logs) gid=981(kk-logs) groups=981(kk-logs),1003(kijanikiosk)
+PASS: kk-logs user exists
+kijanikiosk:x:1003:kk-api,kk-payments,kk-logs
+PASS: kijanikiosk group exists
+PASS: no suid/sgid files under /opt/kijanikiosk
+PASS: /opt/kijanikiosk mode is 750
+PASS: /opt/kijanikiosk/shared/logs mode is 2770
+PASS: kk-api can read api env
+PASS: kk-payments can read payments env
+PASS: kk-logs can read logs env
+PASS: kk-api can write shared logs
+PASS: kk-payments can write shared logs
+PASS: kk-logs can write shared logs
+PASS: kk-api service active
+PASS: kk-payments service active
+PASS: kk-logs service active
+PASS: health json exists
+warning: logrotate in debug mode does nothing except printing debug messages!  Consider using verbose mode (-v) instead if this is not what you want.
+
+reading config file /etc/logrotate.d/kijanikiosk
+Reading state from file: /var/lib/logrotate/status
+Allocating hash table for state file, size 64 entries
+Creating new state
+Creating new state
+Creating new state
+
+Handling 1 logs
+
+rotating pattern: /opt/kijanikiosk/shared/logs/*.log  after 1 days (7 rotations)
+empty log files are not rotated, old logs are removed
+considering log /opt/kijanikiosk/shared/logs/aggregator.log
+  Now: 2026-03-29 22:07
+  Last rotated at 2026-03-29 22:07
+  log does not need rotating (log has already been rotated)
+considering log /opt/kijanikiosk/shared/logs/api.log
+  Now: 2026-03-29 22:07
+  Last rotated at 2026-03-29 22:07
+  log does not need rotating (log has already been rotated)
+considering log /opt/kijanikiosk/shared/logs/payments.log
+  Now: 2026-03-29 22:07
+  Last rotated at 2026-03-29 22:07
+  log does not need rotating (log has already been rotated)
+not running postrotate script, since no logs were rotated
+PASS: logrotate config validates
+PASS: ufw enabled
+PASS: ufw allows 3000/tcp
+PASS: ufw includes deny for 3001
+PASS: journal persistence configured
+PASS: journal max use configured
+PASS: kk-api security score below 3.5 (3.0)
+PASS: kk-payments security score below 2.5 (1.2)
+PASS: kk-logs security score below 3.5 (2.6)
+
+Verification summary: 26 passed, 0 failed
+All verification checks passed.
